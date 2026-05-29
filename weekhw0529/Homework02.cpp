@@ -1,6 +1,9 @@
 ﻿#include "Homework02.h"
+#include <iostream>
+#include <ctime>
+#include <cctype>
+using namespace std;
 //블랙잭 만들기
-//게임 목표
 //두 카드의 합이 21에 가깝게 만들되, 21을 넘지 않는 것이 목표
 //21을 초과하면(버스트, Bust)  즉시 패배
 //배팅은 없음
@@ -33,4 +36,128 @@
 //Homework02_Run(); 함수로 실행 가능해야 함.
 void Homework02_Run()
 {
+	ios_base::sync_with_stdio(false);
+	unsigned int Seed = (unsigned int)time(0);
+	srand(Seed);	
+
+	BlackJack Player;
+	BlackJack Dealer;
+	Player.Init();
+	if (Player.bBlackjack)
+	{
+		cout << "\n@@@@@@@@@@BLACKJACK@@@@@@@@@@\n";
+		return;
+	}
+	Dealer.Init();
+
+	ShowCard(&Player, &Dealer);
+	PlayerTurn(&Player, &Dealer);
+	// RandomCard()로 JQK 받으면 Card[]에 처리하는거 해야함
+	// 플레이어 버스트 처리해야함
+	// A 1또는 11 처리해야함
+	// 승패판정 후 게임 종료 처리해야함
+}
+
+int RandomCard()
+{
+	return rand() % 13 + 1;
+}
+
+bool Bust(int sum)
+{
+	return (sum > 21 ? true : false);
+}
+
+int GetScore(const int card)
+{
+	if (card >= 11 && card <= 13)
+		return 10;
+
+	return card;
+}
+
+void ShowCard(BlackJack* p, BlackJack* d)
+{
+	cout << "==========BlackJack==========\n" << endl;
+
+	cout << "플레이어의 카드는 " << Cards[p->Card[0]] << ", " << Cards[p->Card[1]] << "입니다." << endl;
+	cout << "딜러의 공개 카드는 " << Cards[d->Card[0]] << "입니다." << endl;
+}
+
+void PlayerTurn(BlackJack* p, BlackJack* d)
+{
+	cout << "\n=========Player Turn=========" << endl;
+	cout << "Hit(카드를 1장 더 받음) 또는\nStand(더 이상 카드를 받지 않고 멈춤)\n둘 중 하나를 입력하세요: ";
+
+	string Choice;
+	cin >> Choice;
+	for (int i = 0; i < Choice.size(); i++)
+		Choice[i] = toupper(Choice[i]);
+	while (Choice != "HIT" && Choice != "STAND")
+	{
+		cout << "Hit(카드를 1장 더 받음) 또는\nStand(더 이상 카드를 받지 않고 멈춤)\n둘 중 하나를 입력하세요: ";
+		cin >> Choice;
+		for (int i = 0; i < Choice.size(); i++)
+			Choice[i] = toupper(Choice[i]);
+	}
+	if (Choice == "HIT")
+		PlayerHit(p, d);
+	else // STAND
+		Stand(p, d);
+}
+
+void PlayerHit(BlackJack* p, BlackJack* d)
+{
+	p->Card[p->Count] = RandomCard();
+	p->Sum += GetScore(p->Card[p->Count]);
+	cout << "\n==========PlayerHit==========\n";
+	cout << "카드: " << Cards[p->Card[p->Count]] << "를 받았습니다. 현재 카드의 합: " << p->Sum << endl;
+	p->Count++;
+	if (Bust(p->Sum))
+	{	
+		cout << "==========DealerWin==========" << endl;
+		p->bWin = false;
+		d->bWin = true;
+	}
+	else
+		PlayerTurn(p, d);
+}
+
+void Stand(BlackJack* p, BlackJack* d)
+{
+	cout << "\n=========PlayerStand=========\n";
+	DealerTurn(p, d);
+}
+
+void DealerTurn(BlackJack* p, BlackJack* d)
+{
+	cout << "\n=========Dealer Turn=========\n";
+	cout << "딜러의 비공개 카드는: " << Cards[d->Card[1]] << "입니다.\n";
+	cout << "현재 딜러의 카드의 합: " << d->Sum << ", 딜러의 카드 수: " << d->Count << endl;
+	while (d->Sum < 17)
+	{
+		d->Card[d->Count] = RandomCard();
+		d->Sum += GetScore(d->Card[d->Count]);
+		cout << "\n==========DealerHit==========\n";
+		cout << "딜러가 카드: " << Cards[d->Card[d->Count]] << "를 받았습니다. 현재 딜러의 카드 합: " << d->Sum << endl;
+		d->Count++;
+	}
+	if (Bust(d->Sum) || d->Sum < p->Sum) // 플레이어 승
+	{
+		p->bWin = true;
+		d->bWin = false;
+		cout << "==========PlayerWin==========" << endl;
+	}
+	else if (d->Sum == p->Sum) // 비김
+	{
+		cout << "=============DRAW============" << endl;
+		p->bWin = false;
+		d->bWin = false;
+	}
+	else if (d->Sum > p->Sum) // 딜러 승
+	{
+		cout << "==========DealerWin==========" << endl;
+		p->bWin = false;
+		d->bWin = true;
+	}
 }
