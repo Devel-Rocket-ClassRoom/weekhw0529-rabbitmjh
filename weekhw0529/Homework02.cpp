@@ -52,10 +52,7 @@ void Homework02_Run()
 
 	ShowCard(&Player, &Dealer);
 	PlayerTurn(&Player, &Dealer);
-	// RandomCard()로 JQK 받으면 Card[]에 처리하는거 해야함
-	// 플레이어 버스트 처리해야함
 	// A 1또는 11 처리해야함
-	// 승패판정 후 게임 종료 처리해야함
 }
 
 int RandomCard()
