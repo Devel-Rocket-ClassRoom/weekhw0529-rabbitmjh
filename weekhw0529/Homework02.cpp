@@ -43,12 +43,18 @@ void Homework02_Run()
 	BlackJack Player;
 	BlackJack Dealer;
 	Player.Init();
-	if (Player.bBlackjack)
+	Dealer.Init();
+
+	if (Player.bBlackjack || Dealer.bBlackjack)
 	{
-		cout << "\n@@@@@@@@@@BLACKJACK@@@@@@@@@@\n";
+		if (Player.bBlackjack && Dealer.bBlackjack)
+			cout << "=======Both  BlackJack=======" << endl;
+		else if (Player.bBlackjack)
+			cout << "Player BlackJack, Player Win!" << endl;
+		else
+			cout << "Dealer BlackJack, Dealer Win!" << endl;
 		return;
 	}
-	Dealer.Init();
 
 	ShowCard(&Player, &Dealer);
 	PlayerTurn(&Player, &Dealer);
