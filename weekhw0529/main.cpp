@@ -5,7 +5,6 @@ using namespace std;
 
 int main()
 {
-	Homework01_Run();
 
 	return 0;
 }

@@ -7,4 +7,7 @@
 //Homework01_Run(); 함수로 실행 가능해야 함.
 void Homework01_Run()
 {
+	Date hw01;
+	hw01.GetInput();
+	hw01.PrintDotw();
 }
