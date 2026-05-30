@@ -44,21 +44,15 @@ void Homework02_Run()
 	BlackJack Dealer;
 	Player.Init();
 	Dealer.Init();
-
+	
 	if (Player.bBlackjack || Dealer.bBlackjack)
 	{
-		if (Player.bBlackjack && Dealer.bBlackjack)
-			cout << "=======Both  BlackJack=======" << endl;
-		else if (Player.bBlackjack)
-			cout << "Player BlackJack, Player Win!" << endl;
-		else
-			cout << "Dealer BlackJack, Dealer Win!" << endl;
+		TwoCardBlackJack(&Player, &Dealer);
 		return;
 	}
 
 	ShowCard(&Player, &Dealer);
 	PlayerTurn(&Player, &Dealer);
-	// A 1또는 11 처리해야함
 }
 
 int RandomCard()
@@ -68,7 +62,7 @@ int RandomCard()
 
 bool Bust(int sum)
 {
-	return (sum > 21 ? true : false);
+	return (sum > 21);
 }
 
 int GetScore(const int card)
@@ -77,6 +71,52 @@ int GetScore(const int card)
 		return 10;
 
 	return card;
+}
+
+int SumCal(BlackJack* b)
+{
+	int tmp = 0;
+	for (int i = 0; i < b->Count; i++)
+		if (b->Card[i] != 1)
+			tmp += GetScore(b->Card[i]);
+
+	if (b->AceCount > 1) // 2개 이상
+	{
+		if (tmp + (b->AceCount - 1) + 11 <= 21)
+			return (tmp + (b->AceCount - 1) + 11);
+		else
+			return (tmp + b->AceCount);
+	}
+	else if (b->AceCount > 0) // 1개
+	{
+		if (tmp + 11 <= 21)
+			return (tmp + 11);
+		else
+			return (tmp + 1);
+	}
+	else // 0개
+		return tmp;
+}
+
+bool IsBlackJack(BlackJack* b)
+{
+	if ((b->Card[0] == 1 && b->Card[1] > 9) || (b->Card[1] == 1 && b->Card[0] > 9))
+		return true;
+	else
+		return false;
+}
+
+void TwoCardBlackJack(BlackJack* p, BlackJack* d)
+{
+	if (p->bBlackjack || d->bBlackjack)
+	{
+		if (p->bBlackjack && d->bBlackjack)
+			cout << "=======Both  BlackJack=======" << endl;
+		else if (p->bBlackjack)
+			cout << "Player BlackJack, Player Win!" << endl;
+		else
+			cout << "Dealer BlackJack, Dealer Win!" << endl;
+	}
 }
 
 void ShowCard(BlackJack* p, BlackJack* d)
@@ -90,7 +130,8 @@ void ShowCard(BlackJack* p, BlackJack* d)
 void PlayerTurn(BlackJack* p, BlackJack* d)
 {
 	cout << "\n=========Player Turn=========" << endl;
-	cout << "Hit(카드를 1장 더 받음) 또는\nStand(더 이상 카드를 받지 않고 멈춤)\n둘 중 하나를 입력하세요: ";
+	cout << "현재 플레이어의 카드 합은: " << p->Sum << "입니다." << endl;
+	cout << "Hit(카드를 1장 더 받음) 또는\nStand(더 이상 카드를 받지 않고 멈춤)\n대소문자 구별 없이 둘 중 하나를 입력하세요: ";
 
 	string Choice;
 	cin >> Choice;
@@ -98,7 +139,7 @@ void PlayerTurn(BlackJack* p, BlackJack* d)
 		Choice[i] = toupper(Choice[i]);
 	while (Choice != "HIT" && Choice != "STAND")
 	{
-		cout << "Hit(카드를 1장 더 받음) 또는\nStand(더 이상 카드를 받지 않고 멈춤)\n둘 중 하나를 입력하세요: ";
+		cout << "Hit(카드를 1장 더 받음) 또는\nStand(더 이상 카드를 받지 않고 멈춤)\n대소문자 구별 없이 둘 중 하나를 입력하세요: ";
 		cin >> Choice;
 		for (int i = 0; i < Choice.size(); i++)
 			Choice[i] = toupper(Choice[i]);
@@ -111,16 +152,21 @@ void PlayerTurn(BlackJack* p, BlackJack* d)
 
 void PlayerHit(BlackJack* p, BlackJack* d)
 {
-	p->Card[p->Count] = RandomCard();
-	p->Sum += GetScore(p->Card[p->Count]);
 	cout << "\n==========PlayerHit==========\n";
-	cout << "카드: " << Cards[p->Card[p->Count]] << "를 받았습니다. 현재 카드의 합: " << p->Sum << endl;
+	p->Card[p->Count] = RandomCard();
+
+	cout << "카드: " << Cards[p->Card[p->Count]] << "를 받았습니다.";
+	if (p->Card[p->Count] == 1) // Ace
+		p->AceCount++;
 	p->Count++;
+
+	p->Sum = SumCal(p);
+
+	cout << "현재 카드의 합 : " << p->Sum << endl;
 	if (Bust(p->Sum))
 	{	
+		cout << "\n@@@@@@@@@Player Bust@@@@@@@@@" << endl;
 		cout << "==========DealerWin==========" << endl;
-		p->bWin = false;
-		d->bWin = true;
 	}
 	else
 		PlayerTurn(p, d);
@@ -136,31 +182,52 @@ void DealerTurn(BlackJack* p, BlackJack* d)
 {
 	cout << "\n=========Dealer Turn=========\n";
 	cout << "딜러의 비공개 카드는: " << Cards[d->Card[1]] << "입니다.\n";
-	cout << "현재 딜러의 카드의 합: " << d->Sum << ", 딜러의 카드 수: " << d->Count << endl;
+	cout << "현재 딜러의 카드의 합: " << d->Sum << endl;
 	while (d->Sum < 17)
 	{
-		d->Card[d->Count] = RandomCard();
-		d->Sum += GetScore(d->Card[d->Count]);
 		cout << "\n==========DealerHit==========\n";
-		cout << "딜러가 카드: " << Cards[d->Card[d->Count]] << "를 받았습니다. 현재 딜러의 카드 합: " << d->Sum << endl;
+
+		d->Card[d->Count] = RandomCard();
+		cout << "딜러가 카드: " << Cards[d->Card[d->Count]] << "를 받았습니다.";
+		if (d->Card[d->Count] == 1) // Ace
+			d->AceCount++;
 		d->Count++;
+
+		d->Sum = SumCal(d);
+
+		cout << "현재 딜러의 카드 합 : " << d->Sum << endl;
 	}
-	if (Bust(d->Sum) || d->Sum < p->Sum) // 플레이어 승
+	if (Bust(d->Sum))// 딜러 버스트
 	{
-		p->bWin = true;
-		d->bWin = false;
+		cout << "\n@@@@@@@@@Dealer Bust@@@@@@@@@" << endl;
+		cout << "==========PlayerWin==========" << endl;
+	}
+	else if( d->Sum < p->Sum) // 플레이어 승
+	{
 		cout << "==========PlayerWin==========" << endl;
 	}
 	else if (d->Sum == p->Sum) // 비김
 	{
 		cout << "=============DRAW============" << endl;
-		p->bWin = false;
-		d->bWin = false;
 	}
 	else if (d->Sum > p->Sum) // 딜러 승
 	{
 		cout << "==========DealerWin==========" << endl;
-		p->bWin = false;
-		d->bWin = true;
 	}
+}
+
+void BlackJack::Init()
+{
+	Card[0] = RandomCard();
+	if (Card[0] == 1)
+		AceCount++;
+	Card[1] = RandomCard();
+	if (Card[1] == 1)
+		AceCount++;
+	Count = 2;
+
+	Sum = SumCal(this);
+
+	bBlackjack = IsBlackJack(this);
+
 }
