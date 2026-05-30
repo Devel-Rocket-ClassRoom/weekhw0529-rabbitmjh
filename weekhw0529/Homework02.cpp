@@ -200,20 +200,21 @@ void DealerTurn(BlackJack* p, BlackJack* d)
 	if (Bust(d->Sum))// 딜러 버스트
 	{
 		cout << "\n@@@@@@@@@Dealer Bust@@@@@@@@@" << endl;
-		cout << "==========PlayerWin==========" << endl;
+		cout << "\n==========PlayerWin==========" << endl;
 	}
 	else if( d->Sum < p->Sum) // 플레이어 승
 	{
-		cout << "==========PlayerWin==========" << endl;
+		cout << "\n==========PlayerWin==========" << endl;
 	}
 	else if (d->Sum == p->Sum) // 비김
 	{
-		cout << "=============DRAW============" << endl;
+		cout << "\n=============DRAW============" << endl;
 	}
 	else if (d->Sum > p->Sum) // 딜러 승
 	{
-		cout << "==========DealerWin==========" << endl;
+		cout << "\n==========DealerWin==========" << endl;
 	}
+	cout << "플레이어 카드 합: " << p->Sum << "\t딜러 카드 합: " << d->Sum << endl;
 }
 
 void BlackJack::Init()
